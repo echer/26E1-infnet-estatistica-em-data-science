@@ -1,0 +1,154 @@
+---
+title: "Estatistica para ciencia de dados"
+author: "Alan Echer"
+format: html
+editor: visual
+---
+
+# Carregando os pacotes
+
+```{r}
+library(tidyverse)
+library(readr)
+library(skimr)
+library(gt)
+```
+
+```{r}
+install.packages("conflicted")
+library(conflicted)
+library(tidyverse)
+conflicts_prefer(dplyr::filter)
+```
+
+# Dados
+
+### Carregando dados
+
+```{r}
+df <- read_csv("data/churn_clean.csv") #resultado diferente da professora
+#View(df)
+```
+
+### Dando uma olhada geral nos dados
+
+```{r}
+glimpse(df)
+```
+
+```{r}
+skim(df) #resultado diferente da professora
+```
+
+```{r}
+# Estatistica descritiva
+
+# Medidas de tendencia central
+# - Media = centro de gravidade da concentração dos dados
+# - Mediana = valor central
+# - Moda = valor que mais aparece (pode ser utilizado para categoricas tbm)
+# REGRA: 
+# - valores similares - quando os valores de média e mediana são parecidos a melhor escolha é utilizar a média
+# - outliers - média distorcida, mediana estavel melhor escolha é utilizar a mediana
+# - moda - quase nao utiliza
+
+# Medidas de dispersão
+
+
+tempo <- c(10,11,12,11,10,NA)
+mean(tempo, na.rm = TRUE)
+```
+
+```{r}
+names(df)
+```
+
+```{r}
+mean(df$total_charges, na.rm = TRUE)
+```
+
+MODA
+
+Tabela de frequencia para checar os valores que aparecem mais vezes
+
+Pipe encadeia funções:
+
+h(g(f(x))) - sem pipe
+
+x %\>% f() %\>% g() %\>% h()
+
+pipe novo: \|\>
+
+```{r}
+df$total_charges |>
+  mean(na.rm = TRUE) |>
+  round(2)
+```
+
+```{r}
+df |>
+  count(tenure, sort = TRUE) |>
+  head(5)
+  
+```
+
+```{r}
+# Media e mediana
+
+sumario <- df |>
+  summarise(media = mean(tenure), mediana = median(tenure))
+```
+
+```{r}
+sumario |>
+  gt()
+```
+
+Amplitude
+
+```{r}
+min_max <- na.omit(tempo) |>
+  range()
+
+amplitude <- min_max[2] - min_max[1]
+
+amplitude
+```
+
+```{r}
+min <- na.omit(tempo) |>
+  min()
+
+max <- na.omit(tempo) |>
+  max()
+
+amplitude2 = max - min
+amplitude2
+```
+
+```{r}
+amplitude3 <- max(tempo, na.rm=TRUE) - min(tempo, na.rm=TRUE)
+amplitude3
+```
+
+Quartis
+
+25% - primeira parte (primeiro quartil ou Q1) neste corte 25% estao abaixo deste valor e 75% estão acima
+
+50% - segunda parte (segundo quartil ou Q2 ou mediana) 50% estão abaixo desse valor e 50% estão acima deste valor
+
+75% - terceira parte (terceiro quartil ou Q3) 75% estão abaixo desse valor e 25% estão acima deste valor
+
+```{r}
+quantile(df$tenure, na.rm = TRUE)
+```
+
+```{r}
+df |>
+  summarize(
+    Q1 = quantile(tenure, 0.25, na.rm=TRUE),
+    Q2 = median(tenure, na.rm=TRUE),
+    Q3 = quantile(tenure, 0.75, na.rm=TRUE)
+  ) |>
+  gt()
+```

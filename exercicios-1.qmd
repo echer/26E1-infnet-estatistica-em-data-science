@@ -1,0 +1,6 @@
+---
+title: "Exercicios parte 1"
+author: "Alan Echer"
+format: html
+editor: visual
+---

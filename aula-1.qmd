@@ -1,5 +1,6 @@
 ---
 title: "Estatistica para ciencia de dados"
+author: "Alan Echer"
 format: html
 editor: visual
 ---
@@ -19,13 +20,14 @@ library(conflicted)
 library(tidyverse)
 conflicts_prefer(dplyr::filter)
 ```
-# Dados 
+
+# Dados
 
 ### Carregando dados
 
 ```{r}
-df <- read_csv("data/Aula-1-churn_clean.csv") 
-View(df)
+df <- read_csv("data/churn_clean.csv") 
+#View(df)
 ```
 
 ### Dando uma olhada geral nos dados
