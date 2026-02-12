@@ -152,3 +152,9 @@ df |>
   ) |>
   gt()
 ```
+
+Medidas de dispersão
+
+-   Intervalo Interquartil IQR = Q3 - Q1
+
+-   Variancia e desvio padrão (distancia dos valores entre o valor médio)
