@@ -1,0 +1,854 @@
+---
+title: "Aula 3: Manipulação de dados no dplyr"
+author: "Profª. Edneide Ramalho"
+date: "`r format(Sys.Date(), '%d/%m/%Y')`"
+format: 
+   html:
+      code-fold: show
+      code-summary: "Mostrar/ocultar código"
+      theme: cerulean
+execute: 
+   warning: false
+editor: visual
+---
+
+Aula baseada no Capítulo 3 do livro: R for Data Science <https://learning.oreilly.com/library/view/r-for-data/9781492097396/ch03.html#data-transform-prerequisites>
+
+# Transformação de dados
+
+Nem sempre os dados estão da maneira que queremos. Muitas vezes temos que:
+
+-   criar novas variáveis
+
+-   criar sumários para responder perguntas
+
+-   renomear variáveis
+
+-   reordenar observações
+
+Por isso, vamos aprender ferramentas para fazer isso usando o pacote `dplyr`\`.
+
+# Pré-requisitos
+
+-   Carregar pacotes: `nycflights13` e `tidyverse`
+-   Vamos usar a base de dados `flihgts` para explorar os principais verbos do pacote `dplyr`
+
+```{r}
+# install.packages("nycflights13")
+library(tidyverse)
+library(nycflights13)
+library(gt)
+```
+
+```{r}
+#| echo: true
+#| output: false
+dados <- flights
+glimpse(dados)
+# View(dados)
+```
+
+# `dplyr` básico
+
+Antes de aprender os verbos (funções), temos que entender o que tem em comum:
+
+-   O primeiro argumento é sempre um dataframe (base de dados).
+
+-   Os argumentos subsequentes descrevem em que colunas vamos fazer as operações, usando o nome das variáveis sem aspas
+
+-   A saída sempre será um novo dataframe.
+
+Para combinar múltiplos verbos, usamos o operador **Pipe** (`|>`), que basicamente encadeia as funções. (**Atalho no teclado:** *Ctrl + Shift + M* ou *Cmd (⌘) + Shift + M*) Vamos ver um exemplo:
+
+(se quiser ver um pouco mais sobre os dados: `?flights`)
+
+```{r}
+#| echo: true
+#| output: false
+dados |> 
+  filter(dest == "IAH") |> 
+  group_by(year, month, day) |> 
+  summarize(
+    arr_delay = mean(arr_delay, na.rm = TRUE)
+  )
+```
+
+```{r}
+#| echo: true
+#| output: false
+airports |> 
+  filter(faa == "IAH") |> gt()
+```
+
+-   O que estamos fazendo aqui?
+
+    -   Filtramos para o destino "IAH"
+    -   Agrupamos por ano, mês e dia
+    -   Calculamos a média de tempo de atraso na chegada para cada grupo
+
+-   Os verbos do dplyr são organizados em 4 grupos baseado em suas operações:
+
+    -   linhas
+
+    -   colunas
+
+    -   grupos
+
+    -   tabelas
+
+## Linhas
+
+Os verbos mais importantes são:
+
+-   `filter()`: escolhe que linhas são mostradas sem alterar a ordem
+
+-   `arrange()`: muda a ordem das linhas sem alterar o que é apresentado.
+
+-   `distinct()`: encontra linhas com valores únicos, também pode modificar colunas
+
+### `filter()`
+
+-   Voos que se atrasaram em mais de duas horas:
+
+```{r}
+#| echo: true
+#| output: false
+dados |> 
+  filter(dep_delay > 120)
+```
+
+-   Podemos usar qualquer sinal de comparação: \>=, \<=, \<, == (sinal de igualdade); podemos usar `&` ou `,`para "**E**" e `|` para "**OU**".
+
+-   Voos que partiram em **1 de Janeiro**:
+
+```{r}
+#| echo: true
+#| output: false
+dados |> 
+  filter(month == 1, day == 1)
+```
+
+-   Voos que partiram em Janeiro ou Fevereiro:
+
+```{r}
+#| echo: true
+#| output: false
+dados |> 
+  filter(month == 1 | month == 2)
+```
+
+-   Também podemos usar `%in%` para quando o filtro está em uma lista, por exemplo:
+
+```{r}
+#| echo: true
+#| output: false
+dados |> 
+  filter(month %in% c(1, 2))
+```
+
+### `arrange()`
+
+-   Muda a ordem das linhas baseada no valor das colunas:
+
+```{r}
+#| echo: true
+#| output: false
+dados |> 
+  arrange(year, month, day, dep_time)
+```
+
+-   Se quiser que a ordenação seja em ordem decrescente, devemos usar `desc()`:
+
+```{r}
+#| echo: true
+#| output: false
+dados |> 
+  arrange(desc(dep_delay))
+```
+
+O tempo de atraso de saída `dep_delay` está ordenado do maior para o menor tempo de atraso.
+
+### `distinct()`
+
+-   Encontra todas as linhas distintas no dataset, opera nas linhas. Isso ajuda a remover linhas duplicadas se houver.
+
+```{r}
+#| echo: true
+#| output: false
+dados |> 
+  distinct()
+```
+
+-   Encontrando todos os pares distintos de origem e destino:
+
+```{r}
+#| echo: true
+#| output: false
+dados |> 
+  distinct(origin, dest)
+```
+
+*Temos 224 pares distintos de destino e chegada.*
+
+-   Se você quiser manter todas as outras colunas use `.keep_all = TRUE`
+
+```{r}
+#| echo: true
+#| output: false
+dados |> 
+  distinct(origin, dest, .keep_all = TRUE)
+```
+
+Note que todos os voos estão com data 1 de janeiro, porque encontramos a primeira linha única e depois descartamos o resto.
+
+-   Se quisermos saber o número de ocorrências para cada combinação usamos o verbo `count()` (que veremos mais a frente):
+
+```{r}
+#| echo: true
+#| output: false
+dados |> 
+  count(origin, dest, sort = TRUE)
+```
+
+### Exercícios
+
+1.  **In a single pipeline for each condition, find all flights that meet the condition: 🆗**
+
+    -   **Had an arrival delay of two or more hours**
+
+    -   **Flew to Houston (`IAH` or `HOU`)**
+
+    -   **Were operated by United (UA), American (AA), or Delta (DL)**
+
+    -   **Departed in summer (July, August, and September)**
+
+    -   **Arrived more than two hours late, but didn't leave late**
+
+    -   **Were delayed by at least an hour, but made up more than 30 minutes in flight**
+
+```{r}
+dados |> 
+  filter(carrier %in% c("DL", "UA", "AA")) |> 
+  View()
+```
+
+2.  **Sort `flights` to find the flights with the longest departure delays. Find the flights that left earliest in the morning.**
+
+3.  **Sort `flights` to find the fastest flights. (Hint: Try including a math calculation inside of your function.)**
+
+```{r}
+dados |> 
+  mutate(
+    velocidade = distance / (air_time / 60) # velocidade em milhas por hora
+  ) |> 
+  arrange(desc(velocidade)) |> 
+  head(10) |> 
+  View()
+```
+
+1.  **Was there a flight on every day of 2013?**
+
+2.  **Which flights traveled the farthest distance? Which traveled the least distance?**
+
+3.  **Does it matter what order you used [`filter()`](https://dplyr.tidyverse.org/reference/filter.html) and [`arrange()`](https://dplyr.tidyverse.org/reference/arrange.html) if you're using both? Why/why not? Think about the results and how much work the functions would have to do.**
+
+## Colunas
+
+Verbos importantes:
+
+-   `mutate()`
+
+-   `select()`
+
+-   `rename()`
+
+-   `relocate()`
+
+### `mutate()`
+
+-   Adiciona novas colunas que são calculadas a partir de colunas existentes.
+
+-   Vamos calcular o `ganho` e a `velocidade` em milhas por hora.
+
+```{r}
+#| echo: true
+#| output: false
+dados |> 
+  mutate(
+    ganho = dep_delay - arr_delay,
+    velocidade = distance / air_time * 60
+  )
+```
+
+-   As novas colunas são adicionadas no final da tabela. Se quiser colocá-las no início, usamos o argumento `.before`.
+
+```{r}
+#| echo: true
+#| output: false
+dados |> 
+  mutate(
+    ganho = dep_delay - arr_delay,
+    velocidade = distance / air_time * 60,
+    .before = 1
+  )
+```
+
+-   O ponto antes da palavra *before* significa que isso é um argumento da função e não uma nova variável criada. Podemos usar `.before` e `.after` para inserir as variáveis em qualquer lugar da nossa base de dados. Por exemplo, depois da variável `day` :
+
+```{r}
+#| echo: true
+#| output: false
+dados |> 
+  mutate(
+    ganho = dep_delay - arr_delay,
+    velocidade = distance / air_time * 60,
+    .after = day
+  )
+```
+
+-   Também podemos controlar que variáveis são mantidas com o argumento `.keep` . Um argumento particular é o `used`. Ele especifica que mantenhamos apenas as variáveis usadas nos cálculos.
+
+```{r}
+#| echo: true
+#| output: false
+dados |> 
+  mutate(
+    ganho = dep_delay - arr_delay,
+    horas = air_time / 60,
+    ganho_por_hora = ganho/horas,
+    .keep = "used"
+  )
+```
+
+### `select()`
+
+-   Permite que você selecionae um subconjunto das variáveis do seu dataset.
+
+-   Por exemplo, selecionar o ano, mês e dia
+
+    ```{r}
+    #| echo: true
+    #| output: false
+    dados |> 
+      select(year, month, day)
+    ```
+
+-   Selecionar todas as colunas entre `year` e `day` inclusive:
+
+```{r}
+#| echo: true
+#| output: false
+dados |> 
+  select(year:day)
+```
+
+-   Selecionar todas as colunas exceto aquelas entre year e day (inclusive):
+
+```{r}
+#| echo: true
+#| output: false
+dados |> 
+  select(!year:day)
+```
+
+-   Selecione todas as colunas que são categóricas (character):
+
+```{r}
+#| echo: true
+#| output: false
+dados |> 
+  select(where(is.character)) 
+```
+
+-   Há vários funções que podem ajudar na seleção de variáveis:
+
+    -   `starts_with("abc")`
+
+    -   `ends_with("abc")`
+
+    -   `contains("ijk")`
+
+    -   `num_range("x", 1:3)`
+
+        -   combina com: x1, x2, x3
+
+-   Também podemos renomear variáveis com `select()` usando o "=". O novo nome vem do lado esquerdo, e o antigo do lado direito:
+
+```{r}
+#| echo: true
+#| output: false
+dados |> 
+  select(tail_num = tailnum)
+```
+
+### `rename()`
+
+-   Usado para renomear alguns nomes de variáveis:
+
+```{r}
+#| echo: true
+#| output: false
+dados |> 
+  rename(tail_num = tailnum)
+```
+
+-   Se você quiser corrigir o nome de todas as colunas da sua base de dados, vale à pena checar a função `janitor::clean_names()` que fornece uma limpeza automática de maneira útil.
+
+### `relocate()`
+
+-   Por padrão essa função move as variáveis para as primeiras colunas do dataset:
+
+```{r}
+#| echo: true
+#| output: false
+dados |> 
+  relocate(time_hour, air_time)
+```
+
+-   Podemos usar os argumentos: `.before()` e `.after()` da mesma forma que fizemos com o verbo `mutate()`.
+
+```{r}
+#| echo: true
+#| output: false
+dados |> 
+  relocate(year:dep_time, .after = time_hour)
+```
+
+```{r}
+#| echo: true
+#| output: false
+dados |> 
+  relocate(starts_with("arr"), .before = dep_time) |> 
+  View()
+```
+
+## **Exercises**
+
+1.  **Compare `dep_time`, `sched_dep_time`, and `dep_delay`. How would you expect those three numbers to be related?**
+
+2.  **Brainstorm as many ways as possible to select `dep_time`, `dep_delay`, `arr_time`, and `arr_delay` from `flights`.**
+
+3.  **What happens if you specify the name of the same variable multiple times in a [`select()`](https://dplyr.tidyverse.org/reference/select.html) call?**
+
+4.  **What does the [`any_of()`](https://tidyselect.r-lib.org/reference/all_of.html) function do? Why might it be helpful in conjunction with this vector?**
+
+    ```         
+    variables <- c("year", "month", "day", "dep_delay", "arr_delay")
+    ```
+
+5.  **Does the result of running the following code surprise you? How do the select helpers deal with upper- and lowercase by default? How can you change that default?**
+
+    ```         
+    flights |> select(contains("TIME"))
+    ```
+
+6.  **Rename `air_time` to `air_time_min` to indicate units of measurement and move it to the beginning of the data frame.**
+
+7.  **Por que a função abaixo não funciona e o que a mensagem de erro nos diz?**
+
+    ```         
+    flights |> 
+      select(tailnum) |> 
+      arrange(arr_delay)
+    #> Error in `arrange()`:
+    #> ℹ In argument: `..1 = arr_delay`.
+    #> Caused by error:
+    #> ! object 'arr_delay' not found
+    ```
+
+# O operador Pipe `|>`
+
+**Atalho:** Ctrl/Cmd+Shift+M
+
+Vimos alguns exemplos simples com pipe, mas seu maior uso vem quando combinamos múltiplos verbos para responder à alguma pergunta:
+
+Por exemplo,
+
+::: callout-note
+Quais os vôos mais rápidos com destino ao aeroporto de Houston (**IAH**)?
+:::
+
+-   Para responder, vamos combinar: `filter()`, `mutate()`, `select()`, e `arrange()`.
+
+```{r}
+#| echo: true
+#| output: false
+dados |> 
+  filter(dest == "IAH") |> 
+  mutate(speed = distance/air_time * 60,
+         velocidade_km_h = 1.61 * speed) |> 
+  select(year:day, dep_time, carrier, flight, speed, velocidade_km_h) |> 
+  arrange(desc(speed)) |> View()
+```
+
+-   A vantagem e usar o pipe é que ele torna o código limpo e fácil de ler, caso contrário, teríamos um encademento de funções que seria pouco legível.
+
+# Grupos
+
+Principais verbos:
+
+-   `group_by()`
+
+-   `summarize()`
+
+## `group_by()`
+
+Divide a sua base de dados em grupos úteis para a sua análise.
+
+```{r}
+#| echo: true
+#| output: false
+dados |> 
+  group_by(month)
+```
+
+Fazendo somente essa operação não muda muita coisa, mas agora vemos que os dados estão agrupados, e qualquer operação que realizarmos, será feita dentro de cada grupo.
+
+## `summarize()`
+
+-   A operação mais importante de um grupo é o sumário de informações dentro de cada grupo.
+
+-   Daí, teremos uma única linha para cada grupo e seu sumário, respectivamente.
+
+-   Calculando o atraso de partidas por mês.
+
+```{r}
+#| echo: true
+#| output: false
+dados |> 
+  group_by(month) |> 
+  summarize(
+    atraso_medio = mean(dep_delay, na.rm = TRUE)
+  )
+```
+
+Qual foi o mês com mais atrasos?
+
+```{r}
+#| echo: true
+#| output: false
+dados |> 
+  group_by(month) |> 
+  summarize(
+    atraso_medio = mean(dep_delay, na.rm = TRUE)
+  ) |> 
+  arrange(desc(atraso_medio))
+```
+
+-   Vamos fazer mais um exemplo. Quantos voos foram feitos por mês e ano?
+
+```{r}
+#| echo: true
+#| output: false
+dados |> 
+  group_by(year, month) |> 
+  summarize(qtd_voos = n()) |> 
+  ungroup() |> 
+  arrange(desc(qtd_voos))
+```
+
+-   Juntando tudo:
+
+```{r}
+#| echo: true
+#| output: false
+sumario_voos <- dados |> 
+  group_by(month) |> 
+  summarize(
+    qtd_voos = n(),
+    atraso_medio = mean(dep_delay, na.rm = TRUE)
+  )
+```
+
+# As funções `slice\_`
+
+-   `df |> slice_head(n = 1)` -\> mostra a primeira linha de cada grupo.
+
+-   `df |> slice_tail(n = 1)` -\> mostra a última linha de cada grupo.
+
+-   `df |> slice_min(x, n = 1)` -\> Mostra a linha com o menor valor da coluna x.
+
+-   `df |> slice_max(x, n = 1)` -\> Mostra a linha com maior valor da coluna x.
+
+-   `df |> slice_sample(n = 1)` -\> Mostra uma linha aleatória.
+
+-   Mostrando as duas primeiras linhas:
+
+```{r}
+sumario_voos |> 
+  slice_head(n = 2)
+```
+
+-   Mostrando as duas últimas linhas:
+
+```{r}
+sumario_voos |> 
+  slice_tail(n = 2)
+```
+
+-   Qual o mês com menor quantidade de vôos?
+
+```{r}
+sumario_voos |> 
+  slice_min(qtd_voos, n = 1)
+```
+
+-   Qual o mês com maior quantidade de vôos?
+
+```{r}
+#| echo: true
+#| output: false
+sumario_voos |> 
+  slice_max(qtd_voos, n = 1)
+```
+
+-   Uma linha aleatória:
+
+```{r}
+#| echo: true
+#| output: false
+sumario_voos |> 
+  slice_sample(n = 1)
+```
+
+-   Encontrando os vôos mais atrasados na chegada para cada destino:
+
+```{r}
+#| echo: true
+#| output: false
+dados |> 
+  group_by(dest) |> 
+  slice_max(arr_delay, n = 1) |> 
+  relocate(dest)
+```
+
+### Desafios
+
+-   Calcule a quantidade de voos e o tempo médio no ar para cada destino.
+
+```{r}
+#| echo: false
+#| output: false
+dados |> 
+  group_by(dest) |> 
+  summarize(
+    qtd_voos = n(),
+    tempo_medio_voo = mean(air_time, na.rm = TRUE)
+  ) |> 
+  ungroup()
+```
+
+-   Que destino teve o maior número de voos?
+
+```{r}
+#| echo: false
+#| output: false
+dados |> 
+  group_by(dest) |> 
+  summarize(
+    qtd_voos = n(),
+    tempo_medio_voo = mean(air_time, na.rm = TRUE)
+  ) |> 
+  slice_max(qtd_voos, n = 1)
+```
+
+-   Que destino teve o menor tempo no ar?
+
+```{r}
+#| echo: false
+#| output: false
+dados |> 
+  group_by(dest) |> 
+  summarize(
+    qtd_voos = n(),
+    tempo_medio_voo = mean(air_time, na.rm = TRUE)
+  ) |> 
+  slice_min(tempo_medio_voo, n = 1)
+```
+
+## Agrupando por múltiplas variáveis
+
+-   Podemos agrupar por mais de uma variável ao mesmo tempo:
+
+```{r}
+#| echo: true
+#| output: false
+dados |> 
+  group_by(year, month, day) |> 
+  summarize(
+    qtd_voos = n(),
+    tempo_ar_media = mean(air_time, na.rm = TRUE),
+    tempo_ar_mediana = median(air_time, na.rm = TRUE)
+  )
+```
+
+## Desagrupando (ungroup)
+
+-   Podemos usar a função `ungroup()`, para remover o agrupamento.
+
+-   Isso é importante para se fazer algumas operações considerando todo o dataset ao invés somente dos grupos.
+
+## Exercises
+
+1.  **Which carrier has the worst average delays? Challenge: Can you disentangle the effects of bad airports versus bad carriers? Why/why not? (Hint: Think about `flights |> group_by(carrier, dest) |> summarize(n())`.)**
+
+2.  **Find the flights that are most delayed upon departure from each destination.**
+
+3.  **How do delays vary over the course of the day. Illustrate your answer with a plot.**
+
+4.  **What happens if you supply a negative `n` to [`slice_min()`](https://dplyr.tidyverse.org/reference/slice.html) and friends?**
+
+5.  **Explain what [`count()`](https://dplyr.tidyverse.org/reference/count.html) does in terms of the dplyr verbs you just learned. What does the `sort` argument to [`count()`](https://dplyr.tidyverse.org/reference/count.html) do?**
+
+6.  **Suppose we have the following tiny data frame:**
+
+    ```         
+    df <- tibble(
+      x = 1:5,
+      y = c("a", "b", "a", "a", "b"),
+      z = c("K", "K", "L", "L", "K")
+    )
+    ```
+
+    a.  **Write down what you think the output will look like; then check if you were correct and describe what [`group_by()`](https://dplyr.tidyverse.org/reference/group_by.html) does.**
+
+        ```         
+        df |>
+          group_by(y)
+        ```
+
+    b.  **Write down what you think the output will look like; then check if you were correct and describe what [`arrange()`](https://dplyr.tidyverse.org/reference/arrange.html) does. Also comment on how it's different from the [`group_by()`](https://dplyr.tidyverse.org/reference/group_by.html) in part (a).**
+
+        ```         
+        df |>
+          arrange(y)
+        ```
+
+    c.  **Write down what you think the output will look like; then check if you were correct and describe what the pipeline does.**
+
+        ```         
+        df |>
+          group_by(y) |>
+          summarize(mean_x = mean(x))
+        ```
+
+    d.  **Write down what you think the output will look like; then check if you were correct and describe what the pipeline does. Then, comment on what the message says.**
+
+        ```         
+        df |>
+          group_by(y, z) |>
+          summarize(mean_x = mean(x))
+        ```
+
+    e.  **Write down what you think the output will look like; then check if you were correct and describe what the pipeline does. How is the output different from the one in part (d)?**
+
+        ```         
+        df |>
+          group_by(y, z) |>
+          summarize(mean_x = mean(x), .groups = "drop")
+        ```
+
+    f.  **Write down what you think the outputs will look like; then check if you were correct and describe what each pipeline does. How are the outputs of the two pipelines different?**
+
+        ```         
+        df |>
+          group_by(y, z) |>
+          summarize(mean_x = mean(x))
+
+        df |>
+          group_by(y, z) |>
+          mutate(mean_x = mean(x))
+        ```
+
+```{r}
+dados |> 
+  select(year, month, day)
+```
+
+```{r}
+dados |> 
+  select(year:day)
+```
+
+```{r}
+dados |> 
+  select(year:dep_delay)
+```
+
+```{r}
+dados |> 
+  select(!year:day)
+```
+
+```{r}
+dados |> 
+  select(-year)
+```
+
+Seleciona somente variaveis categoricas
+
+```{r}
+dados |> 
+  select(where(is.character))
+```
+
+Seleciona somente variaveis numericas
+
+```{r}
+dados |> 
+  select(where(is.numeric))
+```
+
+Time colunas
+
+```{r}
+dados |> 
+  select(ends_with("time"))
+```
+
+Criando um novo exemplo
+
+```{r}
+df2 <- dados |> 
+  mutate(year_1 = year, year_2 = year + 1, year_3 = year + 2)
+#View(df2)
+```
+
+```{r}
+df2 |>
+  select(num_range("year_", 1:3))
+  View(df2)
+```
+
+Mudando o nome da coluna
+
+```{r}
+dados |> 
+  rename(ano = year)
+```
+
+Trazer as colunas para frente
+
+```{r}
+dados |> 
+  relocate(time_hour, air_time)
+```
+
+```{r}
+dados |> 
+  relocate(year:dep_time, .after = time_hour)
+```
+
+```{r}
+dados |> 
+  relocate(starts_with("arr"), .before=dep_time)
+```
+
+```{r}
+dados |> 
+  relocate(contains("arr"), .before=dep_time)
+```
+
+```{r}
+
+```
