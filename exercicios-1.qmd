@@ -1,6 +1,229 @@
 ---
-title: "Exercicios parte 1"
-author: "Alan Echer"
+title: "exercicio-1"
 format: html
 editor: visual
 ---
+
+## Exercise 1
+
+Let’s start really easy (don’t worry, we’ll quickly move to more challenging problems) with a vector containing just a single number, which we also call a scalar. Enter a vector in R, by just typing a random number, e.g. `100`, at the prompt and hit the Enter key.
+
+```{r}
+100
+```
+
+### Exercise 2
+
+Great! You just created your first vector! Now, let’s first enter a vector with more than one number. E.g. a vector containing the numbers 1, 2, 3, 4, 5, in that order. If you enter these numbers just like this, R will respond with an error message. It throws an error, because it needs a little bit more information from our side that we actually want to store those numbers in a vector structure. We have to use the following notation for this:
+
+`c(1, 2, 3, 4, 5)`.
+
+Now, enter a vector with the first 5 even numbers in R, and hit Enter.
+
+```{r}
+c(2, 4, 6, 8, 10)
+```
+
+### Exercise 3
+
+Let’s now enter a much longer vector, containing the numbers 1 to 10, 10 times (use copy & paste). What do the numbers between square brackets in the R output mean?
+
+```{r}
+c(1,2,3,4,5,6,7,8,9,10,
+  1,2,3,4,5,6,7,8,9,10,
+  1,2,3,4,5,6,7,8,9,10,
+  1,2,3,4,5,6,7,8,9,10,
+  1,2,3,4,5,6,7,8,9,10,
+  1,2,3,4,5,6,7,8,9,10,
+  1,2,3,4,5,6,7,8,9,10,
+  1,2,3,4,5,6,7,8,9,10,
+  1,2,3,4,5,6,7,8,9,10,
+  1,2,3,4,5,6,7,8,9,10)
+```
+
+### Exercise 4
+
+You should be pretty familiar with entering vectors now. You might actually feel a little *bored* by typing all these numbers. Life would be pretty miserable if we would have to enter data this way over and over again in R. But fortunately, there is a neat solution! We can *assign* a vector to a variable name such that we can retrieve the data we have entered, conveniently by just typing the name of the variable.
+
+Try to assign a vector containing the numbers 1, 2, 3, 4, 5 to a variable named `a`, using the assignment operator (`<-`), and see which of the statements below work.
+
+Enter each of the 9 statements one at a time at the prompt, hit Enter, and try to retrieve the contents of `a`, by typing `a` at the prompt after you entered each statement:
+
+1.  `a<-c(1, 2, 3, 4, 5)`
+
+2.  `a <- c(50, 60, 70, 80, 90)`
+
+3.  `a -> c(20, 31, 42, 53, 64)`
+
+4.  `c(5, 6, 7, 9, 10) <- a`
+
+5.  `c(101, 102, 103, 104, 105) -> a`
+
+6.  `a < - c(11, 12, 13, 14, 15)`
+
+7.  `a < -c(100, 99, 88, 77, 66)`
+
+8.  `assign(a, c(1000, 2000, 3000, 4000, 5000))`
+
+9.  `assign('a', c(83, 16, 35, 58, 3))`
+
+```{r}
+a<-c(1, 2, 3, 4, 5)
+a
+```
+
+```{r}
+a <- c(50, 60, 70, 80, 90)
+a
+```
+
+```{r}
+a -> c(20, 31, 42, 53, 64) #ERRO
+```
+
+```{r}
+c(5, 6, 7, 9, 10) <- a #ERRO
+```
+
+```{r}
+c(101, 102, 103, 104, 105) -> a
+a
+```
+
+```{r}
+a < - c(11, 12, 13, 14, 15)
+```
+
+```{r}
+a < -c(100, 99, 88, 77, 66)
+```
+
+```{r}
+assign(a, c(1000, 2000, 3000, 4000, 5000))
+```
+
+```{r}
+assign('a', c(83, 16, 35, 58, 3))
+a
+```
+
+### Exercise 5
+
+In an R script, you might have created dozens or even hundreds of vectors. In that case, naming them `a`, `b`, `c` etc. is not ideal, because it will be difficult to keep track of what all those letters actually mean. This problem is easily mitigated by using longer, and meaningful, variable names.
+
+Assign the following vectors to a meaningful variable name:
+
+1.  `c(2, 4, 6, 8, 10, 12, 14, 16, 20)`
+
+2.  `0`
+
+3.  `3.141593`
+
+4.  `c(1, 10, 100, 1000, 10000, 100000)`
+
+```{r}
+vector1 <- c(2, 4, 6, 8, 10, 12, 14, 16, 20)
+vector1
+```
+
+```{r}
+zero = 0
+zero
+```
+
+```{r}
+pi_ <- 3.141593
+pi_
+```
+
+```{r}
+vector2 <- c(1, 10, 100, 1000, 10000, 100000)
+vector2
+```
+
+### Exercise 6
+
+Create vectors that correspond to the following variables names:
+
+1.  bmi
+
+2.  age
+
+3.  daysPerMonth
+
+4.  firstFivePrimeNumbers
+
+```{r}
+bmi <- c(2, 5, 6)
+bmi
+```
+
+```{r}
+age <- 33
+age
+```
+
+```{r}
+daysPerMonth <- 30
+daysPerMonth
+```
+
+```{r}
+firstFivePrimeNumbers <- c(2,3,5,7,11)
+firstFivePrimeNumbers
+```
+
+### Exercise 7
+
+So far, we have created vectors from a bunch of numbers. Instead of numbers, however, you can also enter other vectors, e.g. `c(vector1, vector2, vector3)`, and string them together.
+
+To practise this, let’s first create three vectors that each contain just 1 element with variable names `p`, `q`, and `r`, and values 1, 2, and 3. Then, create a new vector that contains multiple elements, using the scalars we just created. I.e., create a vector `u` of length 3, with the subsequent elements of `p`, `q` and `r`.
+
+```{r}
+p = (1)
+q = (2)
+r = (3)
+u = c(p,q,r)
+u
+```
+
+### Exercise 8
+
+To play with this a little more, let’s create a longer vector, using only the assignment operator (`<-`), the `c()` function, and the vector `u` we just created. I.e., create a new vector `u` with length 96 that contains the elements of `u` as follows: 1, 2, 3, 1, 2, 3, …., 1, 2, 3
+
+```{r}
+u <- c(1,2,3,
+       1,2,3,
+       1,2,3,
+       1,2,3,
+       1,2,3,
+       1,2,3,
+       1,2,3,
+       1,2,3,
+       1,2,3,
+       1,2,3,
+       1,2,3,
+       1,2,3,
+       1,2,3,
+       1,2,3,
+       1,2,3,
+       1,2,3,
+       1,2,3,
+       1,2,3,
+       1,2,3,
+       1,2,3,
+       1,2,3,
+       1,2,3,
+       1,2,3,
+       1,2,3,
+       1,2,3,
+       1,2,3,
+       1,2,3,
+       1,2,3,
+       1,2,3,
+       1,2,3,
+       1,2,3,
+       1,2,3,
+       1,2,3)
+u
+```

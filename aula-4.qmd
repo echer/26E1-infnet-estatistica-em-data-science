@@ -848,7 +848,3 @@ dados |>
 dados |> 
   relocate(contains("arr"), .before=dep_time)
 ```
-
-```{r}
-
-```
